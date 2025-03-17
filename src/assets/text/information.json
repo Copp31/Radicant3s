@@ -1,0 +1,119 @@
+{
+  "header": {
+    "fr": {
+      "title": "Corolles radicantes",
+      "author": "Une série photographique de Sarah Seené",
+      "subtitle01": "Développement et création sonore",
+      "subtitle02": "par Coppélia LaRoche-Francoeur"
+    },
+    "en": {
+      "title": "Corolles radicantes",
+      "author": "A photographic series by Sarah Seené",
+      "subtitle01": "Sound creation and development",
+      "subtitle02": "by Coppélia LaRoche-Francoeur"
+    }
+  },
+  "musicMenu": {
+    "fr": {
+      "blockOne": [
+        "Version originale", 
+        "Version audiodescription"
+      ],
+      "blockTwo": [
+        "diptyque 1", "diptyque 2", "diptyque 3", "triptyque 4", "diptyque 5", "diptyque 6", "triptyque 7", "diptyque 8",
+        "diptyque 9", "diptyque 10", "diptyque 11", "diptyque 12", "diptyque 13", "diptyque 14", "diptyque 15", "diptyque 16"
+      ]
+    },
+    "en": {
+      "blockOne": [
+        "Original version", 
+        "Audio description version"
+      ],
+      "blockTwo": [
+        "Diptych 1", "Diptych 2", "Diptych 3", "Triptych 4", "Diptych 5", "Diptych 6", "Triptych 7", "Diptych 8",
+        "Diptych 9", "Diptych 10", "Diptych 11", "Diptych 12", "Diptych 13", "Diptych 14", "Diptych 15", "Diptych 16"
+      ]
+    }
+  },
+  "textBlock": {
+    "fr": [
+      "Ce projet musical explore la transposition des perceptions visuelles et sensorielles à travers le codage et la musique. À partir des photographies de Sarah Seené, qui capturent des corps féminins marqués par des différences physiques, un algorithme Python extrait des données visuelles et les transforme en matériaux sonores. Ce projet vise à prolonger l’expérience visuelle des photographies en leur donnant une dimension sonore. Plutôt qu’une simple audiodescription, il propose une immersion où le code devient un pont entre la perception visuelle et auditive.",
+      "Chaque agencement photographique correspond à une séquence sonore d’une minute. Pour le premier agencement, les notes entendues sont directement issues des données de l’image, établissant ainsi une relation tangible entre le visuel et l’auditif. Plutôt que d’associer chaque pixel à une note, ce projet traduit l’exploration du regard : ce qui capte l’attention, intrigue ou déstabilise. Mon intention est de restituer les tensions et nuances perçues lorsque le regard se pose sur une image.",
+      "L’algorithme, basé sur OpenCV et Scikit-learn, analyse contrastes, couleurs et lumière, puis segmente l’image en clusters révélant ses motifs dominants. Des fichiers MIDI sont générés automatiquement après l’analyse de chaque image."
+    ],
+
+    "en": [
+      "This musical project explores the transposition of visual and sensory perceptions through coding and music. Based on Sarah Seené’s photographs, which capture female bodies marked by physical differences, a Python algorithm extracts visual data and transforms it into sound material. This project aims to extend the visual experience of photographs by giving them a sonic dimension. Rather than a simple audio description, it offers an immersive experience where code becomes a bridge between visual and auditory perception.",
+      "Each photographic arrangement corresponds to a one-minute sound sequence. In the first arrangement, the notes heard are directly derived from the image data, establishing a tangible relationship between the visual and auditory elements. Rather than associating each pixel with a note, this project translates the exploration of the gaze—what captures attention, intrigues, or unsettles. My intention is to convey the tensions and nuances perceived when the gaze lingers on an image.",
+      "The algorithm, based on OpenCV and Scikit-learn, analyzes contrasts, colors, and light, then segments the image into clusters that reveal its dominant patterns. MIDI files are automatically generated after analyzing each image."
+    ]
+  },
+
+      "detailedTextBlock": {
+    "fr": [
+      {
+        "title": "1. Détection des formes et segmentation",
+        "code": "contours, _ = cv2.findContours(edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)",
+        "description": "Les contours structurent l’image en événements visuels. Chaque ligne, chaque rupture dans la continuité devient une frontière sonore. Le mode cv2.RETR_TREE permet d’extraire les relations hiérarchiques entre les formes, capturant l’organisation du regard sur l’image."
+      },
+      {
+        "title": "2. Clustering et cartographie temporelle",
+        "code": "clustering = DBSCAN(eps=30, min_samples=100).fit(points)\ntime_in_seconds = (avg_x / width) * 60",
+        "description": "L’œil ne balaie pas une image uniformément. DBSCAN groupe les formes en fonction de leur proximité spatiale et de leur densité locale. Ces clusters deviennent des motifs sonores, mappés sur une échelle temporelle de 60 secondes. Une masse visuelle dense déclenche un événement sonore plus fort à un moment précis dans la composition."
+      },
+      {
+        "title": "3. Mapping en fréquence et intensité",
+        "code": "luminance = node[‘avg_luminance’] / 255\npitch = clamp(int(map_range(luminance, 0, 1, 40, 100)))\npitch = enforce_c_major_scale(pitch)",
+        "description": "Les zones lumineuses génèrent des fréquences plus aiguës, les ombres produisent des graves. J’ai fait le choix de prendre une échelle de Do majeur (≖ᴗ≖✿) impose une cohérence harmonique qui permet d’éviter la dérive dans l’aléatoire brut."
+      },
+      {
+        "title": "4. Vélocité et impact visuel",
+        "code": "velocity = clamp(int(map_range(node[‘size’], min_size, max_size, 40, 127)))",
+        "description": "Une forme plus imposante dans l’image = un impact sonore plus marqué. La vélocité MIDI suit l’échelle des masses visuelles, traduisant l’intensité perçue en une force d’attaque musicale."
+      },
+      {
+        "title": "5. Drone : la respiration de l’image",
+        "code": "avg_luminance = sum(node[‘avg_luminance’] for node in nodes) / len(nodes)\npitch = enforce_c_major_scale(int(map_range(avg_luminance / 255, 0, 1, 40, 100)))\ntrack.append(Message(‘note_on’, note=pitch, velocity=100, time=0))\ntrack.append(Message(‘note_off’, note=pitch, velocity=100, time=4800))",
+        "description": "Les zones lumineuses de l’image génèrent un fond sonore continu. Plutôt que d’analyser chaque pixel isolément, l’algorithme extrait une moyenne de luminance pour créer une note soutenue, un drone qui reflète la tonalité générale de l’image et évolue en fonction de ses variations."
+      },
+      {
+        "title": "6. Séquençage harmonique : les détails en mouvement",
+        "code": "delta_time = int(node_time * 480) - current_time\ntrack.append(Message(‘note_on’, note=pitch, velocity=velocity, time=max(delta_time, 0)))\ntrack.append(Message(‘note_off’, note=pitch, velocity=velocity, time=duration))",
+        "description": "Chaque élément visuel  devient une note distincte. Les variations locales de l’image sont converties en séquences musicales structurée. Cela introduit des nuances rythmiques et mélodiques qui tente de traduire la richesse des détails visuels. L’image  se déploie ainsi comme une composition musicale dynamique."
+      }
+    ],
+    "en": [
+      {
+        "title": "1. Shape Detection and Segmentation",
+        "code": "contours, _ = cv2.findContours(edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)",
+        "description": "Contours structure the image into visual events. Every line, every break in continuity becomes a sonic boundary. The cv2.RETR_TREE mode extracts hierarchical relationships between shapes, capturing how the eye organizes the image."
+      },
+      {
+        "title": "2. Clustering and Temporal Mapping",
+        "code": "clustering = DBSCAN(eps=30, min_samples=100).fit(points)\ntime_in_seconds = (avg_x / width) * 60",
+        "description": "The eye does not scan an image uniformly. DBSCAN groups shapes based on their spatial proximity and local density. These clusters become sonic patterns, mapped onto a 60-second time scale. A dense visual mass triggers a stronger sonic event at a precise moment in the composition."
+      },
+      {
+        "title": "3. Frequency and Intensity Mapping",
+        "code": "luminance = node[‘avg_luminance’] / 255\npitch = clamp(int(map_range(luminance, 0, 1, 40, 100)))\npitch = enforce_c_major_scale(pitch)",
+        "description": "Bright areas generate higher frequencies, while shadows produce deeper tones. I chose to use a C major scale (≖ᴗ≖✿) to impose harmonic coherence and avoid drifting into raw randomness."
+      },
+      {
+        "title": "4. Velocity and Visual Impact",
+        "code": "velocity = clamp(int(map_range(node[‘size’], min_size, max_size, 40, 127)))",
+        "description": "A larger shape in the image = a stronger sonic impact. MIDI velocity follows the scale of visual masses, translating perceived intensity into a musical attack force."
+      },
+      {
+        "title": "5. Drone: The Image's Breath",
+        "code": "avg_luminance = sum(node[‘avg_luminance’] for node in nodes) / len(nodes)\npitch = enforce_c_major_scale(int(map_range(avg_luminance / 255, 0, 1, 40, 100)))\ntrack.append(Message(‘note_on’, note=pitch, velocity=100, time=0))\ntrack.append(Message(‘note_off’, note=pitch, velocity=100, time=4800))",
+        "description": "Bright areas of the image generate a continuous sound background. Rather than analyzing each pixel individually, the algorithm extracts an average luminance to create a sustained note, a drone that reflects the overall tonality of the image and evolves with its variations."
+      },
+      {
+        "title": "6. Harmonic Sequencing: Moving Details",
+        "code": "delta_time = int(node_time * 480) - current_time\ntrack.append(Message(‘note_on’, note=pitch, velocity=velocity, time=max(delta_time, 0)))\ntrack.append(Message(‘note_off’, note=pitch, velocity=velocity, time=duration))",
+        "description": "Each visual element becomes a distinct note. Local variations in the image are converted into structured musical sequences. This introduces rhythmic and melodic nuances that attempt to translate the richness of visual details. The image unfolds as a dynamic musical composition."
+      }
+    ]
+  }
+
+}
